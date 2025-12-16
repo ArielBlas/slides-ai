@@ -2,10 +2,14 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Play } from "lucide-react";
 import { HeroVideoDialog } from "../ui/hero-video-dialog";
+import { useUser, SignInButton, SignIn } from "@clerk/clerk-react";
+import { Link } from "react-router-dom";
 
 type Props = {};
 
 const Hero = (props: Props) => {
+  const { user } = useUser();
+
   return (
     <div className="flex flex-col items-center justify-center mt-28 space-y-4">
       <h2 className="font-bold text-5xl">
@@ -21,7 +25,15 @@ const Hero = (props: Props) => {
         <Button variant={"outline"} size={"lg"}>
           Watch Video <Play />{" "}
         </Button>
-        <Button size={"lg"}>Get Started</Button>
+        {!user ? (
+          <SignInButton mode="modal">
+            <Button size={"lg"}>Get Started</Button>
+          </SignInButton>
+        ) : (
+          <Link to="/workspace">
+            <Button size={"lg"}>Go to Workspace</Button>
+          </Link>
+        )}
       </div>
       <div className="relative max-w-3xl mt-14">
         <h2 className="text-center my-4">Wath how to create AI PPT</h2>
