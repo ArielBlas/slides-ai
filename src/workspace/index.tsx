@@ -1,12 +1,54 @@
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
+import { firebaseDb } from "../../config/FirebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { UserDetailContext } from "../../context/UserDetailContext";
 
 type Props = {};
 
 const Workspace = (props: Props) => {
   const { user } = useUser();
+  const { userDetail, setUserDetail } = React.useContext(UserDetailContext);
+
+  const CreateNewUser = async () => {
+    if (user) {
+      // if user already exist in DB
+      const docRef = doc(
+        firebaseDb,
+        "users",
+        user?.primaryEmailAddress?.emailAddress ?? ""
+      );
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        console.log("Document data:", docSnap.data());
+        setUserDetail(docSnap.data());
+      } else {
+        const data = {
+          fullName: user.fullName,
+          email: user?.primaryEmailAddress?.emailAddress ?? "",
+          createdAt: new Date(),
+          credits: 2,
+        };
+        // Insert new user
+        await setDoc(
+          doc(
+            firebaseDb,
+            "users",
+            user?.primaryEmailAddress?.emailAddress ?? ""
+          ),
+          data
+        );
+        setUserDetail(data);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (user) CreateNewUser();
+  }, [user]);
 
   if (!user) {
     return (

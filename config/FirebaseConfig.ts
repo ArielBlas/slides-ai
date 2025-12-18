@@ -17,4 +17,4 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const firebaseDb = getFirestore(app);
+export const firebaseDb = getFirestore(app, "ai-slides");
