@@ -5,6 +5,7 @@ import { Link, Outlet } from "react-router-dom";
 import { firebaseDb } from "../../config/FirebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { UserDetailContext } from "../../context/UserDetailContext";
+import Header from "@/components/custom/Header";
 
 type Props = {};
 
@@ -62,7 +63,8 @@ const Workspace = (props: Props) => {
   }
   return (
     <div>
-      Workspace <Outlet />
+      <Header />
+      <Outlet />
     </div>
   );
 };

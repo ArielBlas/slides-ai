@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useContext } from "react";
 import logo from "../../assets/logo.png";
 import { Button } from "../ui/button";
 import { SignInButton, UserButton, useUser } from "@clerk/clerk-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { Gem } from "lucide-react";
+import { UserDetailContext } from "../../../context/UserDetailContext";
 
 type Props = {};
 
 const Header = (props: Props) => {
   const { user } = useUser();
+  const location = useLocation();
+  const { userDetail } = useContext(UserDetailContext);
+
   return (
     <div className="flex items-center justify-between px-10 shadow">
       <img src={logo} alt="Logo" width={130} height={130} />
@@ -18,9 +23,13 @@ const Header = (props: Props) => {
       ) : (
         <div className="flex gap-5 items-center">
           <UserButton />
-          <Link to="/workspace">
+          {location.pathname.includes("/workspace") ? (
+            <div className="flex gap-2 items-center p-2 px-3 bg-orange-100 rounded-full">
+              <Gem /> {userDetail?.credits ?? 0}
+            </div>
+          ) : (
             <Button>Go to Workspace</Button>
-          </Link>
+          )}
         </div>
       )}
     </div>
