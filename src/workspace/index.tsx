@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
 import React, { useEffect } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { firebaseDb } from "../../config/FirebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { UserDetailContext } from "../../context/UserDetailContext";
 import Header from "@/components/custom/Header";
+import PromptBox from "@/components/custom/PromptBox";
 
 type Props = {};
 
 const Workspace = (props: Props) => {
   const { user } = useUser();
   const { userDetail, setUserDetail } = React.useContext(UserDetailContext);
+  const location = useLocation();
 
   const CreateNewUser = async () => {
     if (user) {
@@ -64,6 +66,7 @@ const Workspace = (props: Props) => {
   return (
     <div>
       <Header />
+      {location.pathname === "/workspace" && <PromptBox />}
       <Outlet />
     </div>
   );
