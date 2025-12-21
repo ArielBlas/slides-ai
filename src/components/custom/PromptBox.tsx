@@ -24,8 +24,9 @@ const PromptBox = (props: Props) => {
   return (
     <div className="w-full flex items-center justify-center mt-28">
       <div className="flex flex-col items-center justify-center space-y-4">
-        <h2 className="font-bold text-3xl">
-          Describe your topic, we'll design the slides!
+        <h2 className="font-bold text-4xl">
+          Describe your topic, we'll design the{" "}
+          <span className="text-primary">PPT</span> slides!
         </h2>
         <p className="text-xl text-gray-500">
           Your design will be saved as new project
@@ -51,7 +52,11 @@ const PromptBox = (props: Props) => {
               </SelectContent>
             </Select>
 
-            <InputGroupButton>
+            <InputGroupButton
+              variant={"default"}
+              className="rounded-full ml-auto"
+              size={"icon-sm"}
+            >
               <ArrowUp />
             </InputGroupButton>
           </InputGroupAddon>

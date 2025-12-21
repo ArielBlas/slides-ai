@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { UserDetailContext } from "../../context/UserDetailContext";
 import Header from "@/components/custom/Header";
 import PromptBox from "@/components/custom/PromptBox";
+import MyProjects from "@/components/custom/MyProjects";
 
 type Props = {};
 
@@ -66,7 +67,12 @@ const Workspace = (props: Props) => {
   return (
     <div>
       <Header />
-      {location.pathname === "/workspace" && <PromptBox />}
+      {location.pathname === "/workspace" && (
+        <div>
+          <PromptBox />
+          <MyProjects />
+        </div>
+      )}
       <Outlet />
     </div>
   );
