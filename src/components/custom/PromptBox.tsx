@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -7,7 +7,7 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { ArrowUp, PlusIcon } from "lucide-react";
+import { ArrowUp, Loader2Icon, PlusIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,10 +17,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { v4 as uuidv4 } from "uuid";
+import { doc, setDoc } from "firebase/firestore";
+import { firebaseDb } from "../../../config/FirebaseConfig";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 type Props = {};
 
 const PromptBox = (props: Props) => {
+  const [userInput, setUserInput] = useState<string>("");
+  const { user } = useUser();
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  const CreateAndSaveProject = async () => {
+    // Save project to db
+    const projectId = uuidv4();
+
+    setLoading(true);
+    await setDoc(doc(firebaseDb, "projects", projectId), {
+      projectId: projectId,
+      userInputPrompt: userInput,
+      cretedBy: user?.primaryEmailAddress?.emailAddress,
+      createdAt: Date.now(),
+    });
+    setLoading(false);
+    navigate(`/workspace/project/${projectId}/outline`);
+  };
+
   return (
     <div className="w-full flex items-center justify-center mt-28">
       <div className="flex flex-col items-center justify-center space-y-4">
@@ -36,6 +61,7 @@ const PromptBox = (props: Props) => {
           <InputGroupTextarea
             placeholder="Enter what kind of slider do you want to create?"
             className="min-h-36"
+            onChange={(event) => setUserInput(event.target.value)}
           />
           <InputGroupAddon align={"block-end"}>
             <Select>
@@ -56,8 +82,10 @@ const PromptBox = (props: Props) => {
               variant={"default"}
               className="rounded-full ml-auto"
               size={"icon-sm"}
+              onClick={() => CreateAndSaveProject()}
+              disabled={!userInput.trim()}
             >
-              <ArrowUp />
+              {loading ? <Loader2Icon className="animate-spin" /> : <ArrowUp />}
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
