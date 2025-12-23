@@ -27,6 +27,8 @@ type Props = {};
 
 const PromptBox = (props: Props) => {
   const [userInput, setUserInput] = useState<string>("");
+  const [noOfSlider, setNoOfSlider] = useState<string>("4 to 6");
+
   const { user } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -41,6 +43,7 @@ const PromptBox = (props: Props) => {
       userInputPrompt: userInput,
       cretedBy: user?.primaryEmailAddress?.emailAddress,
       createdAt: Date.now(),
+      noOfSlider: noOfSlider,
     });
     setLoading(false);
     navigate(`/workspace/project/${projectId}/outline`);
@@ -64,7 +67,7 @@ const PromptBox = (props: Props) => {
             onChange={(event) => setUserInput(event.target.value)}
           />
           <InputGroupAddon align={"block-end"}>
-            <Select>
+            <Select onValueChange={(value) => setNoOfSlider(value)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select No of Slider" />
               </SelectTrigger>
