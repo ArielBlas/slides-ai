@@ -3,6 +3,7 @@ import { firebaseDb } from "../../../../config/FirebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { useParams } from "react-router-dom";
 import SlidersStyle from "@/components/custom/SlidersStyle";
+import OutlineSection from "@/components/custom/OutlineSection";
 
 type Props = {};
 
@@ -35,6 +36,7 @@ const Outline = (props: Props) => {
       <div className="max-w-3xl w-full">
         <h2 className="font-bold text-2xl">Settings and Slider Outline</h2>
         <SlidersStyle />
+        <OutlineSection />
       </div>
     </div>
   );

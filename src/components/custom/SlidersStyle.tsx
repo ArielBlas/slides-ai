@@ -32,7 +32,7 @@ const SlidersStyle = (props: Props) => {
             key={index}
             className={`cursor-pointer ${
               design.styleName === selectedStyle
-                ? "p-1 border-2 rounded-2xl"
+                ? "p-1 border-2 border-primary rounded-2xl"
                 : ""
             }`}
             onClick={() => setSelectedStyle(design.styleName)}
