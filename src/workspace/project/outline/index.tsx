@@ -12,6 +12,13 @@ type Project = {
   projectId: string;
   createdAt: string;
   noOfSliders: string;
+  outline: Outline[];
+};
+
+export type Outline = {
+  slidesNo: string;
+  slidePoint: string;
+  outline: string;
 };
 
 const OUTLINE_PROMPT = `
@@ -35,6 +42,7 @@ const Outline = (props: Props) => {
   const { projectId } = useParams();
   const [projectDetail, setProjectDetail] = useState<Project>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [outline, setOutline] = useState<Outline[]>();
 
   const GenerateSlidersOutline = async (projectData: Project) => {
     setLoading(true);
@@ -47,6 +55,9 @@ const Outline = (props: Props) => {
 
     const response = result.response;
     const text = response.text();
+    const rawJson = text.replace("```json", "").replace("```", "").trim();
+    const JSONData = JSON.parse(rawJson);
+    setOutline(JSONData);
     setLoading(false);
   };
 
@@ -55,7 +66,8 @@ const Outline = (props: Props) => {
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) return;
     setProjectDetail(docSnap.data() as Project);
-    GenerateSlidersOutline(docSnap.data() as Project);
+    if (!docSnap.data()?.outline)
+      GenerateSlidersOutline(docSnap.data() as Project);
   };
 
   useEffect(() => {
@@ -70,7 +82,7 @@ const Outline = (props: Props) => {
       <div className="max-w-3xl w-full">
         <h2 className="font-bold text-2xl">Settings and Slider Outline</h2>
         <SlidersStyle />
-        <OutlineSection loading={loading} />
+        <OutlineSection loading={loading} outline={outline ?? []} />
       </div>
     </div>
   );
