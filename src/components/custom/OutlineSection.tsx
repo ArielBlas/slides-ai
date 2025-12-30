@@ -2,7 +2,8 @@ import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import type { Outline } from "@/workspace/project/outline";
 import { Button } from "../ui/button";
-import { Edit } from "lucide-react";
+import { ArrowRight, Edit } from "lucide-react";
+import EditOutlineDialog from "./EditOutlineDialog";
 
 type Props = {
   loading: boolean;
@@ -39,12 +40,21 @@ const OutlineSection = ({ loading, outline }: Props) => {
                 <p>{item.outline}</p>
               </div>
             </div>
-            <Button variant={"ghost"} size={"icon-lg"}>
-              <Edit />
-            </Button>
+            <EditOutlineDialog outlineData={item}>
+              <Button variant={"ghost"} size={"icon-lg"}>
+                <Edit />
+              </Button>
+            </EditOutlineDialog>
           </div>
         ))}
       </div>
+
+      <Button
+        size="lg"
+        className="fixed bottom-6 transform left-1/2 -translate-x-1/2"
+      >
+        Generate Sliders <ArrowRight />
+      </Button>
     </div>
   );
 };
