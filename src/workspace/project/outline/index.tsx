@@ -77,12 +77,26 @@ const Outline = (props: Props) => {
     })();
   }, [projectId]);
 
+  const handleUpdateOutline = (index: string | undefined, value: Outline) => {
+    setOutline((prevOutline) =>
+      prevOutline?.map((item) =>
+        item.slidesNo === index ? { ...item, ...value } : item
+      )
+    );
+  };
+
   return (
     <div className="flex justify-center mt-20">
       <div className="max-w-3xl w-full">
         <h2 className="font-bold text-2xl">Settings and Slider Outline</h2>
         <SlidersStyle />
-        <OutlineSection loading={loading} outline={outline ?? []} />
+        <OutlineSection
+          loading={loading}
+          outline={outline ?? []}
+          handleUpdateOutline={(index: string | undefined, value: Outline) =>
+            handleUpdateOutline(index, value)
+          }
+        />
       </div>
     </div>
   );

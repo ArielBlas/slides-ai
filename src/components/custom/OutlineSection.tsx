@@ -8,9 +8,13 @@ import EditOutlineDialog from "./EditOutlineDialog";
 type Props = {
   loading: boolean;
   outline: Outline[];
+  handleUpdateOutline: (
+    slidesNo: string | undefined,
+    updatedOutline: Outline
+  ) => void;
 };
 
-const OutlineSection = ({ loading, outline }: Props) => {
+const OutlineSection = ({ loading, outline, handleUpdateOutline }: Props) => {
   return (
     <div className="mt-7">
       <div className="font-bold text-xl">Sliders Outline</div>
@@ -40,7 +44,10 @@ const OutlineSection = ({ loading, outline }: Props) => {
                 <p>{item.outline}</p>
               </div>
             </div>
-            <EditOutlineDialog outlineData={item}>
+            <EditOutlineDialog
+              outlineData={item}
+              onUpdate={handleUpdateOutline}
+            >
               <Button variant={"ghost"} size={"icon-lg"}>
                 <Edit />
               </Button>

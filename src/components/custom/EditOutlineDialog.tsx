@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,15 +12,32 @@ import type { Outline } from "@/workspace/project/outline";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 type Props = {
   children: React.ReactNode;
   outlineData: Outline;
+  onUpdate: (slidesNo: string | undefined, updatedOutline: Outline) => void;
 };
 
-const EditOutlineDialog = ({ children, outlineData }: Props) => {
+const EditOutlineDialog = ({ children, outlineData, onUpdate }: Props) => {
+  const [localData, setLocalData] = useState<Outline>(outlineData);
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleChange = (field: keyof Outline, value: string) => {
+    setLocalData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  const handleUpdate = () => {
+    onUpdate(outlineData?.slidesNo, localData);
+    setOpenDialog(false);
+  };
+
   return (
-    <Dialog>
+    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -30,18 +47,29 @@ const EditOutlineDialog = ({ children, outlineData }: Props) => {
               <label>Slide Title</label>
               <Input
                 placeholder="Slider title"
-                value={outlineData.slidePoint}
+                value={localData.slidePoint}
+                onChange={(event) =>
+                  handleChange("slidePoint", event.target.value)
+                }
               />
               <div className="mt-3">
                 <label className="mt-4">Outline</label>
-                <Textarea placeholder="Outline" value={outlineData.outline} />
+                <Textarea
+                  placeholder="Outline"
+                  value={localData.outline}
+                  onChange={(event) =>
+                    handleChange("outline", event.target.value)
+                  }
+                />
               </div>
             </div>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant={"outline"}>Close</Button>
-          <Button>Update</Button>
+          <DialogClose>
+            <Button variant={"outline"}>Close</Button>
+          </DialogClose>
+          <Button onClick={handleUpdate}>Update</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
