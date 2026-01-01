@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { firebaseDb, GeminiAiModel } from "../../../../config/FirebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useParams } from "react-router-dom";
-import SlidersStyle from "@/components/custom/SlidersStyle";
+import SlidersStyle, {
+  type DesignStyle,
+} from "@/components/custom/SlidersStyle";
 import OutlineSection from "@/components/custom/OutlineSection";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Loader2Icon } from "lucide-react";
 
 type Props = {};
 
@@ -42,7 +46,9 @@ const Outline = (props: Props) => {
   const { projectId } = useParams();
   const [projectDetail, setProjectDetail] = useState<Project>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [UpdateDbLoading, setUpdateDbLoading] = useState<boolean>(false);
   const [outline, setOutline] = useState<Outline[]>();
+  const [selectedStyle, setSelectedStyle] = useState<DesignStyle>();
 
   const GenerateSlidersOutline = async (projectData: Project) => {
     setLoading(true);
@@ -85,11 +91,27 @@ const Outline = (props: Props) => {
     );
   };
 
+  const onGenerateSlider = async () => {
+    setUpdateDbLoading(true);
+    // update db
+    await setDoc(
+      doc(firebaseDb, "projects", projectId ?? ""),
+      {
+        designStyle: selectedStyle,
+        outline: outline,
+      },
+      { merge: true }
+    );
+    setUpdateDbLoading(false);
+  };
+
   return (
     <div className="flex justify-center mt-20">
       <div className="max-w-3xl w-full">
         <h2 className="font-bold text-2xl">Settings and Slider Outline</h2>
-        <SlidersStyle />
+        <SlidersStyle
+          selectedStyle={(value: DesignStyle) => setSelectedStyle(value)}
+        />
         <OutlineSection
           loading={loading}
           outline={outline ?? []}
@@ -98,6 +120,16 @@ const Outline = (props: Props) => {
           }
         />
       </div>
+
+      <Button
+        size="lg"
+        className="fixed bottom-6 transform left-1/2 -translate-x-1/2"
+        onClick={onGenerateSlider}
+        disabled={UpdateDbLoading || loading}
+      >
+        {UpdateDbLoading && <Loader2Icon className="animate-spin" />}
+        Generate Sliders <ArrowRight />
+      </Button>
     </div>
   );
 };

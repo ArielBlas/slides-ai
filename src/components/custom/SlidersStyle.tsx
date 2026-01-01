@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 import ProfessionalSlider from "../../assets/professional.jpg";
 
-type Props = {};
+type Props = {
+  selectedStyle: (value: DesignStyle) => void;
+};
+
+export type DesignStyle = {
+  styleName: string;
+  colors: any;
+  designGuide: string;
+  icon: string;
+  bannerImage: any;
+};
 
 const Design_Styles = [
   {
@@ -20,7 +30,7 @@ const Design_Styles = [
   },
 ];
 
-const SlidersStyle = (props: Props) => {
+const SlidersStyle = ({ selectedStyle }: Props) => {
   const [selectedStyle, setSelectedStyle] = useState<string>();
   return (
     <div className="mt-5">
@@ -35,7 +45,10 @@ const SlidersStyle = (props: Props) => {
                 ? "p-1 border-2 border-primary rounded-2xl"
                 : ""
             }`}
-            onClick={() => setSelectedStyle(design.styleName)}
+            onClick={() => {
+              setSelectedStyle(design.styleName);
+              selectedStyle(design);
+            }}
           >
             <img
               src={design.bannerImage}
