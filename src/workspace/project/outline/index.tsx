@@ -11,7 +11,7 @@ import { ArrowRight, Loader2Icon } from "lucide-react";
 
 type Props = {};
 
-type Project = {
+export type Project = {
   userInputPrompt: string;
   projectId: string;
   createdAt: string;
