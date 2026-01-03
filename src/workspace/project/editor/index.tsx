@@ -28,6 +28,14 @@ const Editor = (props: Props) => {
     })();
   }, [projectId]);
 
+  const GenerateSlides = () => {};
+
+  useEffect(() => {
+    if (projectDetail && projectDetail.slides?.length === 0) {
+      GenerateSlides();
+    }
+  }, [projectDetail]);
+
   return (
     <div className="grid grid-cols-5 p-10">
       <div className="col-span-2 h-screen overflow-auto">

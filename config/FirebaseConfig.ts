@@ -1,7 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
+import {
+  getAI,
+  getGenerativeModel,
+  getLiveGenerativeModel,
+  GoogleAIBackend,
+  ResponseModality,
+} from "firebase/ai";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -28,4 +34,12 @@ const ai = getAI(app, {
 // Create a `GenerativeModel` instance with a model that supports your use of case
 export const GeminiAiModel = getGenerativeModel(ai, {
   model: "gemini-2.5-flash",
+});
+
+export const GeminiAiLiveModel = getLiveGenerativeModel(ai, {
+  model: "gemini-2.0-flash-live-preview-04-09",
+  // Configure the model to respond with text
+  generationConfig: {
+    responseModalities: [ResponseModality.TEXT],
+  },
 });
