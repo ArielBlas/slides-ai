@@ -7,6 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Project } from "../outline";
+import SliderFrame from "@/components/custom/SliderFrame";
 
 type Props = {};
 
@@ -116,7 +117,16 @@ const Editor = (props: Props) => {
           loading={loading}
         />
       </div>
-      <div className="col-span-3">{/* Sliders */}</div>
+      <div className="col-span-3">
+        {/* Sliders */}
+        {sliders.map((slide, index) => (
+          <SliderFrame
+            key={index}
+            slide={slide}
+            colors={projectDetail?.designStyle?.colors}
+          />
+        ))}
+      </div>
     </div>
   );
 };
