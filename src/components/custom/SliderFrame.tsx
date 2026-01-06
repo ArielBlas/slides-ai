@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 
 type Props = {
-  slide: string;
+  slide: { code: string };
   colors: any;
 };
 
@@ -60,8 +61,101 @@ const HTML_DEFAULT = `
     </html>
 `;
 
-const SliderFrame = (props: Props) => {
-  return <div>SliderFrame</div>;
+const SliderFrame = ({ slide, colors }: Props) => {
+  const { id } = useParams();
+
+  const FINAL_CODE = HTML_DEFAULT.replace(
+    "{colorCodes}",
+    JSON.stringify(colors)
+  ).replace("{code}", slide?.code);
+
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (!iframeRef.current) return;
+    const iframe = iframeRef.current;
+    const doc = iframeRef.current?.contentDocument;
+    if (!doc) return;
+
+    doc.open();
+    doc.write(FINAL_CODE);
+    doc.close();
+
+    let hoverEl: HTMLElement | null = null;
+    let selectedEl: HTMLElement | null = null;
+
+    const handleMouseOver = (e: MouseEvent) => {
+      if (selectedEl) return;
+      const target = e.target as HTMLElement;
+      if (hoverEl && hoverEl !== target) hoverEl.style.outline = "";
+      hoverEl = target;
+      hoverEl.style.outline = "2px dotted blue";
+    };
+
+    const handleMouseOut = () => {
+      if (selectedEl) return;
+      if (hoverEl) {
+        hoverEl.style.outline = "";
+        hoverEl = null;
+      }
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      const target = e.target as HTMLElement;
+
+      if (selectedEl && selectedEl !== target) {
+        selectedEl.style.outline = "";
+        selectedEl.removeAttribute("contenteditable");
+      }
+
+      selectedEl = target;
+      selectedEl.style.outline = "2px solid blue";
+      selectedEl.setAttribute("contenteditable", "true");
+      selectedEl.focus();
+
+      const rect = target.getBoundingClientRect();
+      const iframeRect = iframe.getBoundingClientRect();
+    };
+
+    const handleBlur = () => {
+      if (selectedEl) {
+        console.log("Final edited element: ", selectedEl.outerHTML);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedEl) {
+        selectedEl.style.outline = "";
+        selectedEl.removeAttribute("contenteditable");
+        selectedEl = null;
+      }
+    };
+
+    doc.addEventListener("DOMContentLoaded", () => {
+      doc.body?.addEventListener("mouseover", handleMouseOver);
+      doc.body?.addEventListener("mouseout", handleMouseOut);
+      doc.body?.addEventListener("click", handleClick);
+      doc.body?.addEventListener("keydown", handleKeyDown);
+    });
+
+    return () => {
+      doc.body?.removeEventListener("mouseover", handleMouseOver);
+      doc.body?.removeEventListener("mouseout", handleMouseOut);
+      doc.body?.removeEventListener("click", handleClick);
+      doc.body?.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  return (
+    <div>
+      <iframe
+        ref={iframeRef}
+        className="w-[900px] h-[600px] border-0"
+        sandbox="aloow-scripts allow-same-origin allow-modals allow-forms allow-popups"
+      />
+    </div>
+  );
 };
 
 export default SliderFrame;
