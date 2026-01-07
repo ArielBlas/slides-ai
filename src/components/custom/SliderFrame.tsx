@@ -62,8 +62,6 @@ const HTML_DEFAULT = `
 `;
 
 const SliderFrame = ({ slide, colors }: Props) => {
-  const { id } = useParams();
-
   const FINAL_CODE = HTML_DEFAULT.replace(
     "{colorCodes}",
     JSON.stringify(colors)

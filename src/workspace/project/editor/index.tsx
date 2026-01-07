@@ -51,53 +51,65 @@ const Editor = (props: Props) => {
   }, [projectId]);
 
   const GenerateSlides = async () => {
-    const prompt = SLIDER_PROMPT.replace(
-      "{DESIGN_STYLE}",
-      projectDetail?.designStyle?.designGuide ?? ""
-    )
-      .replace(
-        "{COLORS_CODE}",
-        JSON.stringify(projectDetail?.designStyle?.colors)
+    if (!projectDetail?.outline || projectDetail.outline.length === 0) return;
+
+    console.log("Starting slide generation...");
+
+    for (
+      let index = 0;
+      index < projectDetail.outline.length && index < 3;
+      index++
+    ) {
+      const metaData = projectDetail.outline[index];
+      const prompt = SLIDER_PROMPT.replace(
+        "{DESIGN_STYLE}",
+        projectDetail.designStyle?.designGuide || ""
       )
-      .replace("{METADATA}", JSON.stringify(projectDetail?.outline[0]));
+        .replace(
+          "{COLORS_CODE}",
+          JSON.stringify(projectDetail.designStyle?.colors)
+        )
+        .replace("{METADATA}", JSON.stringify(metaData));
+      console.log("Generating slide", index + 1);
+      await GeminiSlideCall(prompt, index);
+      console.log("Finished slide", index + 1);
+    }
+  };
 
-    const session = await GeminiAiLiveModel.connect();
+  const GeminiSlideCall = async (prompt: string, index: number) => {
+    try {
+      const session = await GeminiAiLiveModel.connect();
+      await session.send(prompt);
 
-    session.send(prompt);
+      let text = "";
 
-    let text = "";
-    const messages = session.receive();
-    for await (const message of messages) {
-      switch (message.type) {
-        case "serverContent":
-          if (message.turnComplete) {
-            console.log(text);
-          } else {
-            const parts = message.modelTurn?.parts;
-            if (parts) {
-              text += parts.map((part) => part.text).join("");
-              console.log(text);
-              const finalText = text.replace("```html", "").replace("```", "");
-              setSliders((prev) => {
-                if (!prev) return [];
-                const updated = [...prev];
-                if (0 < updated.length) {
-                  updated[0] = { code: finalText };
-                } else {
-                  updated[0] = { code: finalText };
-                }
-                return updated;
-              });
-            }
+      for await (const message of session.receive()) {
+        if (message.type === "serverContent") {
+          const parts = message.modelTurn?.parts;
+          if (parts && parts.length > 0) {
+            text += parts.map((p) => p.text).join("");
+
+            const finalText = text
+              .replace(/```html/g, "")
+              .replace(/```/g, "")
+              .trim();
+
+            setSliders((prev) => {
+              const updated = [...prev];
+              updated[index] = { code: finalText };
+              return updated;
+            });
           }
-          break;
-        case "toolCall":
-          // Ignore
-          break;
-        case "toolCallCancellation":
-          // Ignore
-          break;
+
+          if (message.turnComplete) {
+            console.log("Slide", index + 1, "complete");
+            break;
+          }
+        }
       }
+      session.close();
+    } catch (error) {
+      console.error("Error generating slide:", error);
     }
   };
 
