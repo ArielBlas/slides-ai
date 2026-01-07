@@ -3,7 +3,7 @@ import {
   firebaseDb,
   GeminiAiLiveModel,
 } from "../../../../config/FirebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Project } from "../outline";
@@ -33,6 +33,7 @@ const Editor = (props: Props) => {
   const [projectDetail, setProjectDetail] = useState<Project>();
   const [loading, setLoading] = useState<boolean>(false);
   const [sliders, setSliders] = useState<any[]>([]);
+  const [isSlidesGenerated, setIsSlidesGenerated] = useState<any>();
 
   const GetProjectDetail = async () => {
     setLoading(true);
@@ -74,6 +75,10 @@ const Editor = (props: Props) => {
       await GeminiSlideCall(prompt, index);
       console.log("Finished slide", index + 1);
     }
+
+    console.log("All slides generated.");
+
+    setIsSlidesGenerated(Date.now());
   };
 
   const GeminiSlideCall = async (prompt: string, index: number) => {
@@ -95,7 +100,7 @@ const Editor = (props: Props) => {
               .trim();
 
             setSliders((prev) => {
-              const updated = [...prev];
+              const updated = prev ? [...prev] : [];
               updated[index] = { code: finalText };
               return updated;
             });
@@ -113,11 +118,31 @@ const Editor = (props: Props) => {
     }
   };
 
+  const SaveAllSlides = async () => {
+    await setDoc(
+      doc(firebaseDb, "projects", projectId ?? ""),
+      {
+        slides: sliders,
+      },
+      {
+        merge: true,
+      }
+    );
+  };
+
   useEffect(() => {
     if (projectDetail && projectDetail.slides?.length === 0) {
       GenerateSlides();
+    } else {
+      setSliders(projectDetail?.slides || []);
     }
   }, [projectDetail]);
+
+  useEffect(() => {
+    if (isSlidesGenerated) {
+      SaveAllSlides();
+    }
+  }, [isSlidesGenerated]);
 
   return (
     <div className="grid grid-cols-5 p-10">
@@ -131,7 +156,7 @@ const Editor = (props: Props) => {
       </div>
       <div className="col-span-3">
         {/* Sliders */}
-        {sliders.map((slide, index) => (
+        {sliders?.map((slide, index) => (
           <SliderFrame
             key={index}
             slide={slide}
