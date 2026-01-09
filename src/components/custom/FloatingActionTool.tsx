@@ -1,0 +1,40 @@
+import React from "react";
+import { Button } from "../ui/button";
+import { ArrowRight, Sparkles, X } from "lucide-react";
+
+type Props = {
+  position: { x: number; y: number } | null;
+  onClose: () => void;
+};
+
+const FloatingActionTool = ({ position, onClose }: Props) => {
+  if (!position) return null;
+
+  return (
+    <div
+      className="absolute z-50 bg-white-500  text-sm px-3 py-2 rounded-lg shadow-xl border flex items-center"
+      style={{
+        top: position.y + 10,
+        left: position.x,
+        transform: "translate(-80%)",
+      }}
+    >
+      <div className="flex gap-2 items-center">
+        <Sparkles className="h-4 2-4" />
+        <input
+          type="text"
+          placeholder="Edit with AI"
+          className="outline-none border-none"
+        />
+        <Button variant={"ghost"} size={"icon-sm"}>
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
+      <Button variant={"ghost"} size={"icon-sm"} onClick={onClose}>
+        <X />
+      </Button>
+    </div>
+  );
+};
+
+export default FloatingActionTool;

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import FloatingActionTool from "./FloatingActionTool";
 
 type Props = {
   slide: { code: string };
@@ -68,6 +69,10 @@ const SliderFrame = ({ slide, colors }: Props) => {
   ).replace("{code}", slide?.code);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [cardPosition, setCardPosition] = React.useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!iframeRef.current) return;
@@ -114,6 +119,11 @@ const SliderFrame = ({ slide, colors }: Props) => {
 
       const rect = target.getBoundingClientRect();
       const iframeRect = iframe.getBoundingClientRect();
+
+      setCardPosition({
+        x: iframeRect.left + rect.left + rect.width / 2,
+        y: iframeRect.top + rect.bottom,
+      });
     };
 
     const handleBlur = () => {
@@ -151,6 +161,10 @@ const SliderFrame = ({ slide, colors }: Props) => {
         ref={iframeRef}
         className="w-[900px] h-[600px] border-0"
         sandbox="aloow-scripts allow-same-origin allow-modals allow-forms allow-popups"
+      />
+      <FloatingActionTool
+        position={cardPosition}
+        onClose={() => setCardPosition(null)}
       />
     </div>
   );
