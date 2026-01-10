@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import FloatingActionTool from "./FloatingActionTool";
+import { GeminiAiModel } from "../../../config/FirebaseConfig";
 
 type Props = {
   slide: { code: string };
@@ -69,10 +70,12 @@ const SliderFrame = ({ slide, colors }: Props) => {
   ).replace("{code}", slide?.code);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [cardPosition, setCardPosition] = React.useState<{
+  const [cardPosition, setCardPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const selectedElRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!iframeRef.current) return;
@@ -106,6 +109,9 @@ const SliderFrame = ({ slide, colors }: Props) => {
     const handleClick = (e: MouseEvent) => {
       e.stopPropagation();
       const target = e.target as HTMLElement;
+      selectedEl = target;
+
+      selectedElRef.current = target;
 
       if (selectedEl && selectedEl !== target) {
         selectedEl.style.outline = "";
@@ -155,6 +161,43 @@ const SliderFrame = ({ slide, colors }: Props) => {
     };
   }, []);
 
+  const handleAiSectionChange = async (userAiPrompt: string) => {
+    setLoading(true);
+    const selectedEl = selectedElRef.current;
+    const iframe = iframeRef.current;
+
+    if (!selectedEl || !iframe) return;
+
+    const oldHTML = selectedEl.outerHTML;
+
+    const prompt = `
+    Regenerate or rewrite the following HTML code based on this user instruction:
+    "User Instruction is: ${userAiPrompt}"
+    HTML code:
+    ${oldHTML}
+    `;
+
+    try {
+      const result = await GeminiAiModel.generateContent(prompt);
+      const newHTML = (await result.response.text()).trim();
+
+      const tempDiv = iframe.contentDocument?.createElement("div");
+      if (tempDiv) {
+        tempDiv.innerHTML = newHTML;
+        const newNode = tempDiv.firstElementChild;
+
+        if (newNode && selectedEl.parentNode) {
+          selectedEl.parentNode.replaceChild(newNode, selectedEl);
+          selectedElRef.current = newNode as HTMLElement;
+          console.log("Element updated with AI content.");
+        }
+      }
+    } catch (error) {
+      console.error("Error updating element with AI content:", error);
+    }
+    setLoading(false);
+  };
+
   return (
     <div>
       <iframe
@@ -165,6 +208,8 @@ const SliderFrame = ({ slide, colors }: Props) => {
       <FloatingActionTool
         position={cardPosition}
         onClose={() => setCardPosition(null)}
+        loading={loading}
+        handleAiChange={(value: string) => handleAiSectionChange(value)}
       />
     </div>
   );
