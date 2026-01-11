@@ -171,10 +171,16 @@ const SliderFrame = ({ slide, colors }: Props) => {
     const oldHTML = selectedEl.outerHTML;
 
     const prompt = `
-    Regenerate or rewrite the following HTML code based on this user instruction:
-    "User Instruction is: ${userAiPrompt}"
-    HTML code:
-    ${oldHTML}
+      Regenerate or rewrite the following HTML code based on this user instruction.
+      If user asked to change the image/regenerate the image then make sure to use 
+      Image Kit:
+      'https://ik.imagekit.io/ikmedia/ik-genimg-prompt-{imagePrompt}/{altImageName}.jpg'
+      Replace {imagePrompt} with relevant image prompt and altIMageName with a random image name.
+      if user want to crop image, or remove background or scale image or optimize image then add image kit ai transformation
+      by providing ?tr=fo-auto,<other transfromation> etc.
+      "User Instruction is :${userAiPrompt}"
+      HTML code:
+      ${oldHTML}
     `;
 
     try {
