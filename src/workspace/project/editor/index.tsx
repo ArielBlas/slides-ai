@@ -144,6 +144,15 @@ const Editor = (props: Props) => {
     }
   }, [isSlidesGenerated]);
 
+  const updateSliderCode = (updateSlideCode: string, index: number) => {
+    setSliders((prev) => {
+      const updated = prev ? [...prev] : [];
+      updated[index] = { ...updated[index], code: updateSlideCode };
+      return updated;
+    });
+    setIsSlidesGenerated(Date.now());
+  };
+
   return (
     <div className="grid grid-cols-5 p-10">
       <div className="col-span-2 h-screen overflow-auto">
@@ -161,6 +170,9 @@ const Editor = (props: Props) => {
             key={index}
             slide={slide}
             colors={projectDetail?.designStyle?.colors}
+            setUpdateSlider={(updateSlideCode: string) =>
+              updateSliderCode(updateSlideCode, index)
+            }
           />
         ))}
       </div>

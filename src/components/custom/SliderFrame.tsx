@@ -6,6 +6,7 @@ import { GeminiAiModel } from "../../../config/FirebaseConfig";
 type Props = {
   slide: { code: string };
   colors: any;
+  setUpdateSlider: any;
 };
 
 const HTML_DEFAULT = `
@@ -63,7 +64,7 @@ const HTML_DEFAULT = `
     </html>
 `;
 
-const SliderFrame = ({ slide, colors }: Props) => {
+const SliderFrame = ({ slide, colors, setUpdateSlider }: Props) => {
   const FINAL_CODE = HTML_DEFAULT.replace(
     "{colorCodes}",
     JSON.stringify(colors)
@@ -196,6 +197,9 @@ const SliderFrame = ({ slide, colors }: Props) => {
           selectedEl.parentNode.replaceChild(newNode, selectedEl);
           selectedElRef.current = newNode as HTMLElement;
           console.log("Element updated with AI content.");
+
+          const updatedSliderCode = iframe.contentDocument?.body?.innerHTML;
+          setUpdateSlider(updatedSliderCode);
         }
       }
     } catch (error) {
