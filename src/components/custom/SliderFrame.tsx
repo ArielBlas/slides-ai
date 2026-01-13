@@ -136,6 +136,9 @@ const SliderFrame = ({ slide, colors, setUpdateSlider }: Props) => {
     const handleBlur = () => {
       if (selectedEl) {
         console.log("Final edited element: ", selectedEl.outerHTML);
+        const updatedSliderCode = iframe.contentDocument?.body?.innerHTML;
+        console.log(updatedSliderCode);
+        setUpdateSlider(updatedSliderCode);
       }
     };
 

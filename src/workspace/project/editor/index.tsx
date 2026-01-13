@@ -4,10 +4,14 @@ import {
   GeminiAiLiveModel,
 } from "../../../../config/FirebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Project } from "../outline";
 import SliderFrame from "@/components/custom/SliderFrame";
+import { Button } from "@/components/ui/button";
+import { FileDown, Loader2 } from "lucide-react";
+import * as htmlToImage from "html-to-image";
+import PptxGenJS from "pptxgenjs";
 
 type Props = {};
 
@@ -34,6 +38,8 @@ const Editor = (props: Props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [sliders, setSliders] = useState<any[]>([]);
   const [isSlidesGenerated, setIsSlidesGenerated] = useState<any>();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   const GetProjectDetail = async () => {
     setLoading(true);
@@ -153,6 +159,39 @@ const Editor = (props: Props) => {
     setIsSlidesGenerated(Date.now());
   };
 
+  const exportAllIframesToPPT = async () => {
+    if (!containerRef.current) return;
+
+    setDownloadLoading(true);
+    const pptx = new PptxGenJS();
+    const iframes = containerRef.current.querySelectorAll("iframe");
+
+    for (let i = 0; i < iframes.length; i++) {
+      const iframe = iframes[i] as HTMLIFrameElement;
+      const iframeDoc =
+        iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) continue;
+
+      const slideNode = iframeDoc.querySelector("body > div") || iframeDoc.body;
+      if (!slideNode) continue;
+
+      console.log(`Exporting slide ${i + 1}...`);
+
+      const dataUrl = await htmlToImage.toPng(slideNode, { quality: 1 });
+
+      const slide = pptx.addSlide();
+      slide.addImage({
+        data: dataUrl,
+        x: 0,
+        y: 0,
+        w: 10,
+        h: 5.625,
+      });
+    }
+    setDownloadLoading(false);
+    pptx.writeFile({ fileName: "MyProjectSlides.pptx" });
+  };
+
   return (
     <div className="grid grid-cols-5 p-10">
       <div className="col-span-2 h-screen overflow-auto">
@@ -163,7 +202,7 @@ const Editor = (props: Props) => {
           loading={loading}
         />
       </div>
-      <div className="col-span-3">
+      <div className="col-span-3 h-screen overflow-auto" ref={containerRef}>
         {/* Sliders */}
         {sliders?.map((slide, index) => (
           <SliderFrame
@@ -176,6 +215,16 @@ const Editor = (props: Props) => {
           />
         ))}
       </div>
+      {/* Export button */}
+      <Button
+        size={"lg"}
+        className="fixed bottom-6 transform left-1/2 -translate-x-1/2"
+        onClick={exportAllIframesToPPT}
+        disabled={downloadLoading}
+      >
+        {downloadLoading ? <Loader2 className="animate-spin" /> : <FileDown />}{" "}
+        Export PPT
+      </Button>
     </div>
   );
 };
