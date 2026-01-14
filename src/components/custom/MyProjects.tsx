@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
   Empty,
@@ -9,10 +9,34 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ArrowRight, FolderIcon } from "lucide-react";
+import type { Project } from "@/workspace/project/outline";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { firebaseDb } from "../../../config/FirebaseConfig";
+import { useUser } from "@clerk/clerk-react";
 
 type Props = {};
 
 const MyProjects = (props: Props) => {
+  const [projects, setProjects] = useState<Project[]>();
+  const { user } = useUser();
+
+  const GetProjects = async () => {
+    const q = query(
+      collection(firebaseDb, "projects"),
+      where("createdBy", "==", user?.primaryEmailAddress?.emailAddress ?? "")
+    );
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data());
+      setProjects((prev) => [...(prev ?? []), doc.data() as Project]);
+    });
+  };
+
+  useEffect(() => {
+    if (user) GetProjects();
+  }, [user]);
+
   return (
     <div className="mx-32 mt-20">
       <div className="flex justify-between items-center">
