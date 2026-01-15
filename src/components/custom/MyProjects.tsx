@@ -13,6 +13,9 @@ import type { Project } from "@/workspace/project/outline";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { firebaseDb } from "../../../config/FirebaseConfig";
 import { useUser } from "@clerk/clerk-react";
+import PPT_ICON from "../../assets/ppt.png";
+import moment from "moment";
+import { Link } from "react-router-dom";
 
 type Props = {};
 
@@ -37,6 +40,11 @@ const MyProjects = (props: Props) => {
     if (user) GetProjects();
   }, [user]);
 
+  const FormatDate = (timestamp: any) => {
+    const formateDate = moment(timestamp).fromNow();
+    return formateDate;
+  };
+
   return (
     <div className="mx-32 mt-20">
       <div className="flex justify-between items-center">
@@ -44,34 +52,58 @@ const MyProjects = (props: Props) => {
         <Button>+ Create New project</Button>
       </div>
       <div>
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <FolderIcon />
-            </EmptyMedia>
-            <EmptyTitle>No Projects Yet</EmptyTitle>
-            <EmptyDescription>
-              You haven&apos;t created any projects yet. Get started by creating
-              your first project.
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <div className="flex gap-2">
-              <Button>Create Project</Button>
-              {/* <Button variant="outline">Import Project</Button> */}
-            </div>
-          </EmptyContent>
-          <Button
-            variant="link"
-            asChild
-            className="text-muted-foreground"
-            size="sm"
-          >
-            <a href="#">
-              Learn More <ArrowRight />
-            </a>
-          </Button>
-        </Empty>
+        {!projects?.length ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <FolderIcon />
+              </EmptyMedia>
+              <EmptyTitle>No Projects Yet</EmptyTitle>
+              <EmptyDescription>
+                You haven&apos;t created any projects yet. Get started by
+                creating your first project.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <div className="flex gap-2">
+                <Button>Create Project</Button>
+                {/* <Button variant="outline">Import Project</Button> */}
+              </div>
+            </EmptyContent>
+            <Button
+              variant="link"
+              asChild
+              className="text-muted-foreground"
+              size="sm"
+            >
+              <a href="#">
+                Learn More <ArrowRight />
+              </a>
+            </Button>
+          </Empty>
+        ) : (
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
+            {projects.map((project, index) => (
+              <Link to={`/workspace/project/${project.projectId}/editor`}>
+                <div
+                  key={index}
+                  className="p-4 border rounded-2xl shadow mt-3 space-y-1"
+                >
+                  <img src={PPT_ICON} width={50} height={50} />
+                  <h2 className="font-bold text-lg">
+                    {project?.userInputPrompt}
+                  </h2>
+                  <h2 className="text-red-600">
+                    Total {project?.slides?.length} Slides
+                  </h2>
+                  <p className="text-gray-400">
+                    {FormatDate(project?.createdAt)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
