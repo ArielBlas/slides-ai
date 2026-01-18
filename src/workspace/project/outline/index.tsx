@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { firebaseDb, GeminiAiModel } from "../../../../config/FirebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import SlidersStyle, {
   type DesignStyle,
 } from "@/components/custom/SlidersStyle";
 import OutlineSection from "@/components/custom/OutlineSection";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2Icon } from "lucide-react";
+import { UserDetailContext } from "../../../../context/UserDetailContext";
+import CreditLimitedDialog from "@/components/custom/CreditLimitedDialog";
+import { useAuth } from "@clerk/clerk-react";
 
 type Props = {};
 
@@ -49,14 +52,19 @@ const Outline = (props: Props) => {
   const [projectDetail, setProjectDetail] = useState<Project>();
   const [loading, setLoading] = useState<boolean>(false);
   const [UpdateDbLoading, setUpdateDbLoading] = useState<boolean>(false);
+  const { userDetail, setUserDetail } = useContext(UserDetailContext);
   const [outline, setOutline] = useState<Outline[]>();
   const [selectedStyle, setSelectedStyle] = useState<DesignStyle>();
+  const [openAlert, setOpenAlert] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const { has } = useAuth();
+  const hasUnlimitedAccess = has && has({ plan: "unlimited" });
 
   const GenerateSlidersOutline = async (projectData: Project) => {
     setLoading(true);
     const prompt = OUTLINE_PROMPT.replace(
       "{userInput}",
-      projectData.userInputPrompt ?? ""
+      projectData.userInputPrompt ?? "",
     ).replace("{noOfSliders}", projectData.noOfSliders ?? "");
 
     const result = await GeminiAiModel.generateContent(prompt);
@@ -88,12 +96,16 @@ const Outline = (props: Props) => {
   const handleUpdateOutline = (index: string | undefined, value: Outline) => {
     setOutline((prevOutline) =>
       prevOutline?.map((item) =>
-        item.slidesNo === index ? { ...item, ...value } : item
-      )
+        item.slidesNo === index ? { ...item, ...value } : item,
+      ),
     );
   };
 
   const onGenerateSlider = async () => {
+    if (userDetail?.credits <= 0 && !hasUnlimitedAccess) {
+      setOpenAlert(true);
+      return;
+    }
     setUpdateDbLoading(true);
     // update db
     await setDoc(
@@ -102,9 +114,25 @@ const Outline = (props: Props) => {
         designStyle: selectedStyle,
         outline: outline,
       },
-      { merge: true }
+      { merge: true },
     );
+    if (!hasUnlimitedAccess)
+      await setDoc(
+        doc(firebaseDb, "users", userDetail?.email ?? ""),
+        {
+          credits: userDetail?.credits - 1,
+        },
+        {
+          merge: true,
+        },
+      );
+    if (!hasUnlimitedAccess)
+      setUserDetail({
+        ...userDetail,
+        credits: (userDetail?.credits ?? 0) - 1,
+      });
     setUpdateDbLoading(false);
+    navigate(`/workspace/project/${projectId}/editor`);
   };
 
   return (
@@ -132,6 +160,8 @@ const Outline = (props: Props) => {
         {UpdateDbLoading && <Loader2Icon className="animate-spin" />}
         Generate Sliders <ArrowRight />
       </Button>
+
+      <CreditLimitedDialog openAlert={openAlert} setOpenAlert={setOpenAlert} />
     </div>
   );
 };
